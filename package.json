@@ -2,8 +2,12 @@
   "name": "@helios-lang/esbuild-plugin",
   "version": "0.1.0",
   "description": "Plugin that compiled helios contract during bundling",
-  "main": "sr/index.js",
+  "main": "src/index.js",
+  "types": "types/index.d.ts",
+  "type": "module",
   "scripts": {
+    "build": "npm run build:types",
+    "build:types": "npx tsc -p jsconfig.json --noEmit false --emitDeclarationOnly",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
