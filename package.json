@@ -1,29 +1,37 @@
 {
-  "name": "@helios-lang/esbuild-plugin",
-  "version": "0.1.1",
-  "description": "Plugin that compiled helios contract during bundling",
-  "main": "src/index.js",
-  "types": "types/index.d.ts",
-  "type": "module",
-  "scripts": {
-    "build": "npm run build:types",
-    "build:types": "npx tsc -p jsconfig.json --noEmit false --emitDeclarationOnly",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/HeliosLang/esbuild-plugin.git"
-  },
-  "author": "Christian Schmitz",
-  "license": "BSD-3-Clause",
-  "bugs": {
-    "url": "https://github.com/HeliosLang/esbuild-plugin/issues"
-  },
-  "homepage": "https://github.com/HeliosLang/esbuild-plugin#readme",
-  "dependencies": {
-    "esbuild": "^0.20.2"
-  },
-  "devDependencies": {
-    "@types/node": "^20.12.7"
-  }
+    "name": "@helios-lang/esbuild-plugin",
+    "version": "0.1.1",
+    "description": "Plugin that compiled helios contract during bundling",
+    "main": "src/index.js",
+    "types": "types/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "npm run prettify && npm run build:types",
+        "build:types": "npx tsc -p jsconfig.json --noEmit false --emitDeclarationOnly",
+        "prettify": "npx prettier . --write",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "prettier": {
+        "trailingComma": "none",
+        "tabWidth": 4,
+        "semi": false,
+        "singleQuote": false
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/HeliosLang/esbuild-plugin.git"
+    },
+    "author": "Christian Schmitz",
+    "license": "BSD-3-Clause",
+    "bugs": {
+        "url": "https://github.com/HeliosLang/esbuild-plugin/issues"
+    },
+    "homepage": "https://github.com/HeliosLang/esbuild-plugin#readme",
+    "dependencies": {
+        "esbuild": "^0.20.2"
+    },
+    "devDependencies": {
+        "@types/node": "^20.12.7",
+        "prettier": "^3.1.1"
+    }
 }
