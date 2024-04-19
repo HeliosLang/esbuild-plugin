@@ -20,7 +20,7 @@ const { readFile } = promises
  * @param {HeliosESBuildPluginProps} props
  * @returns {Plugin}
  */
-export function makeHeliosESBuildPlugin(props) {
+function makePlugin(props) {
     /**
      * @type {{[key: string]: any}}
      */
@@ -152,4 +152,4 @@ ${content}`,
     }
 }
 
-export default makeHeliosESBuildPlugin
+export default makePlugin
