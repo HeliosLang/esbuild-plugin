@@ -90,7 +90,7 @@ function makePlugin(props) {
                                     args.path,
                                     "utf8"
                                 )
-                                console.log("suffix: ", args.suffix)
+
                                 return {
                                     contents: `import { contractContextCache as ${cacheName} } from "@helios-lang/contract-utils";
 ${cacheName}.enable();
@@ -123,7 +123,7 @@ ${content}`,
             build.onLoad(
                 { filter: new RegExp(escapedEntryPoint) },
                 async (args) => {
-                    console.log("building helios context entry point")
+                    console.log("building helios context entry point...")
                     const env = build.initialOptions.define ?? {}
                     const tsConfig = build.initialOptions.tsconfig
 
@@ -144,7 +144,7 @@ ${content}`,
                         contents: `import { contractContextCache as ${cacheName} } from "@helios-lang/contract-utils";
 ${cacheName}.load(${JSON.stringify(toBeInjected)});
 ${content}`,
-                        loader: args.suffix.endsWith("ts") ? "ts" : "js"
+                        loader: args.suffix.endsWith("js") ? "js" : "ts"
                     }
                 }
             )
