@@ -1,0 +1,25 @@
+{
+  "name": "@helios-lang/esbuild-plugin",
+  "version": "0.1.0",
+  "description": "Plugin that compiled helios contract during bundling",
+  "main": "sr/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HeliosLang/esbuild-plugin.git"
+  },
+  "author": "Christian Schmitz",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/HeliosLang/esbuild-plugin/issues"
+  },
+  "homepage": "https://github.com/HeliosLang/esbuild-plugin#readme",
+  "dependencies": {
+    "esbuild": "^0.20.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7"
+  }
+}
