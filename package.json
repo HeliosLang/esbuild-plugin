@@ -1,6 +1,6 @@
 {
     "name": "@helios-lang/esbuild-plugin",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "Plugin that compiled helios contract during bundling",
     "main": "src/index.js",
     "types": "types/index.d.ts",
