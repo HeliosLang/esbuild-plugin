@@ -92,7 +92,7 @@ async function compile({ path, env, tsConfig, cache, content: maybeContent }) {
         tsconfig: tsConfig
     })
 
-    const h = generateHash(dst)
+    const h = await generateHash(dst)
 
     const fsCachePath = join(tmpdir(), "helios-cache", h + ".json")
 
