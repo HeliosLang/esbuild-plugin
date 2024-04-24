@@ -1,10 +1,10 @@
 import { readFile, writeFile } from "node:fs/promises"
-import { dirname, join } from "node:path"
+import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { build } from "esbuild"
 import { createHash } from "node:crypto"
 import { existsSync, mkdirSync } from "node:fs"
-import { transpileModule } from "typescript"
+import ts from "typescript"
 
 const INTERNAL_CACHE_NAME =
     "__contractContextCache__DO_NOT_USE_THIS_VAR_FOR_SOMETHING_ELSE"
@@ -35,7 +35,7 @@ ${INTERNAL_CACHE_NAME}.load(${JSON.stringify(toBeInjected)});
 ${content}`
 
     if (format == "js") {
-        newContent = transpileModule(newContent, {}).outputText
+        newContent = ts.transpileModule(newContent, {}).outputText
     }
 
     return newContent
