@@ -9,21 +9,21 @@ export { compileAndInject } // so it can be used by other plugins
 /**
  * @typedef {{
  *   contextEntryPoint: string
- * }} HeliosESBuildPluginProps
+ * }} HeliosESBuildPluginOptions
  */
 
 /**
- * @param {HeliosESBuildPluginProps} props
+ * @param {HeliosESBuildPluginOptions} options
  * @returns {Plugin}
  */
-function makePlugin(props) {
+export default function makePlugin(options) {
     /**
      * Cache that is persisted across the run
      * @type {{[key: string]: any}}
      */
     const cache = {}
 
-    const escapedEntryPoint = props.contextEntryPoint.replace(
+    const escapedEntryPoint = options.contextEntryPoint.replace(
         /[/\-\\^$*+?.()|[\]{}]/g,
         "\\$&"
     )
@@ -60,5 +60,3 @@ function makePlugin(props) {
         }
     }
 }
-
-export default makePlugin

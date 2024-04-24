@@ -15,6 +15,7 @@ const INTERNAL_CACHE_NAME =
  *   env: Record<string, string>
  *   tsConfig: string
  *   cache?: Record<string, any>
+ *   content?: string
  * }} CompileProps
  */
 
@@ -33,11 +34,10 @@ ${content}`
 }
 
 /**
- *
  * @param {CompileProps} props
  * @returns {Promise<any>}
  */
-async function compile({ path, env, tsConfig, cache }) {
+async function compile({ path, env, tsConfig, cache, content: maybeContent }) {
     const uuid = Math.floor(Date.now() / 20).toString(36)
     const internalName =
         "__contractContextCache__DO_NOT_USE_THIS_VAR_FOR_SOMETHING_ELSE"
@@ -53,7 +53,7 @@ async function compile({ path, env, tsConfig, cache }) {
     const dstDir = join(tmpdir(), `helios-${uuid}`)
     const dst = join(dstDir, "context.cjs")
 
-    const escapedEntryPoint = path.replace(/[/\-\\^$*+?.()|[\]{}]/g, "\\$&")
+    const escapedPath = path.replace(/[/\-\\^$*+?.()|[\]{}]/g, "\\$&")
 
     // create a bundle we can evaluate
     await build({
@@ -71,9 +71,11 @@ async function compile({ path, env, tsConfig, cache }) {
                 name: "helios-inject-context-build-cache",
                 setup: (build) => {
                     build.onLoad(
-                        { filter: new RegExp(escapedEntryPoint) },
+                        { filter: new RegExp(escapedPath) },
                         async (args) => {
-                            const content = await readFile(args.path, "utf8")
+                            const content =
+                                maybeContent ??
+                                (await readFile(args.path, "utf8"))
 
                             return {
                                 contents: `import { contractContextCache as ${internalName} } from "@helios-lang/contract-utils";
@@ -92,10 +94,10 @@ async function compile({ path, env, tsConfig, cache }) {
 
     const h = generateHash(dst)
 
-    const globalCachePath = join(tmpdir(), "helios-cache", h + ".json")
+    const fsCachePath = join(tmpdir(), "helios-cache", h + ".json")
 
-    if (existsSync(globalCachePath)) {
-        const toBeInjected = JSON.parse(await readFile(globalCachePath, "utf8"))
+    if (existsSync(fsCachePath)) {
+        const toBeInjected = JSON.parse(await readFile(fsCachePath, "utf8"))
 
         if (cache) {
             cache[cacheKey] = toBeInjected
@@ -111,7 +113,7 @@ async function compile({ path, env, tsConfig, cache }) {
             cache[cacheKey] = toBeInjected
         }
 
-        await writeFile(globalCachePath, JSON.stringify(toBeInjected))
+        await writeFile(fsCachePath, JSON.stringify(toBeInjected))
 
         return toBeInjected
     }
