@@ -1,9 +1,5 @@
-import { mkdtempSync, promises } from "node:fs"
-import { join } from "node:path"
-import { tmpdir } from "node:os"
-import { build } from "esbuild"
-
-const { readFile } = promises
+import { compileAndInject } from "./compile.js"
+export { compileAndInject } // so it can be used by other plugins
 
 /**
  * @typedef {import("esbuild").Plugin} Plugin
@@ -22,6 +18,7 @@ const { readFile } = promises
  */
 function makePlugin(props) {
     /**
+     * Cache that is persisted across the run
      * @type {{[key: string]: any}}
      */
     const cache = {}
@@ -31,94 +28,8 @@ function makePlugin(props) {
         "\\$&"
     )
 
-    const uuid = Math.floor(Date.now() / 20).toString(36)
-
-    const cacheName = `__contractContextCache_${uuid}`
-
-    /**
-     * @param {{[key: string]: string}} env
-     * @returns {string}
-     */
-    function getCacheKey(env) {
-        const obj = [
-            props.contextEntryPoint,
-            Object.entries(env).sort((a, b) =>
-                a[0] < b[0] ? -1 : a[0] == b[0] ? 0 : -1
-            )
-        ]
-
-        // TODO: should this be hashed?
-        return JSON.stringify(obj)
-    }
-
-    /**
-     * @param {string} tsConfig
-     * @param {{[key: string]: string}} env
-     * @returns {Promise<any>}
-     */
-    async function compileContextEntryPoint(env, tsConfig) {
-        // this must be cached
-        const cacheKey = getCacheKey(env)
-        const cacheValue = cache[cacheKey]
-        if (cacheValue) {
-            return cacheValue
-        }
-
-        // make a temporary file
-        const dstDir = join(tmpdir(), `helios-${uuid}`)
-        const dst = join(dstDir, "context.cjs")
-
-        // create a bundle we can evaluate
-        await build({
-            bundle: true,
-            splitting: false,
-            packages: undefined,
-            format: "cjs",
-            platform: "node",
-            minify: false,
-            outfile: dst,
-            entryPoints: [props.contextEntryPoint],
-            define: env,
-            plugins: [
-                {
-                    name: "helios-inject-context-build-cache",
-                    setup: (build) => {
-                        build.onLoad(
-                            { filter: new RegExp(escapedEntryPoint) },
-                            async (args) => {
-                                const content = await readFile(
-                                    args.path,
-                                    "utf8"
-                                )
-
-                                return {
-                                    contents: `import { contractContextCache as ${cacheName} } from "@helios-lang/contract-utils";
-${cacheName}.enable();
-export { ${cacheName} };
-${content}`,
-                                    loader: args.suffix.endsWith("js")
-                                        ? "js"
-                                        : "ts"
-                                }
-                            }
-                        )
-                    }
-                }
-            ],
-            tsconfig: tsConfig
-        })
-
-        const output = await import(dst)
-
-        const toBeInjected = output[cacheName].toJson()
-
-        cache[cacheKey] = toBeInjected
-
-        return toBeInjected
-    }
-
     return {
-        name: "helios-context-builder",
+        name: "esbuild-plugin-helios",
         setup: (build) => {
             build.onLoad(
                 { filter: new RegExp(escapedEntryPoint) },
@@ -133,17 +44,15 @@ ${content}`,
                         )
                     }
 
-                    const toBeInjected = await compileContextEntryPoint(
-                        env,
-                        tsConfig
-                    )
-
-                    const content = await readFile(args.path, "utf8")
+                    const modifiedContents = await compileAndInject({
+                        path: args.path,
+                        env: env,
+                        tsConfig: tsConfig,
+                        cache: cache
+                    })
 
                     return {
-                        contents: `import { contractContextCache as ${cacheName} } from "@helios-lang/contract-utils";
-${cacheName}.load(${JSON.stringify(toBeInjected)});
-${content}`,
+                        contents: modifiedContents,
                         loader: args.suffix.endsWith("js") ? "js" : "ts"
                     }
                 }
