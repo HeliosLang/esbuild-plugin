@@ -6,6 +6,10 @@ import { createHash } from "node:crypto"
 import { existsSync, mkdirSync } from "node:fs"
 import ts from "typescript"
 
+/**
+ * @typedef {import("typescript").CompilerOptions} CompilerOptions
+ */
+
 const INTERNAL_CACHE_NAME =
     "__contractContextCache__DO_NOT_USE_THIS_VAR_FOR_SOMETHING_ELSE"
 
@@ -35,10 +39,22 @@ ${INTERNAL_CACHE_NAME}.load(${JSON.stringify(toBeInjected)});
 ${content}`
 
     if (format == "js") {
-        newContent = ts.transpileModule(newContent, {}).outputText
+        const tsCompilerOptions = await extractCompilerOptions(tsConfig)
+        newContent = ts.transpileModule(newContent, {
+            compilerOptions: tsCompilerOptions
+        }).outputText
     }
 
     return newContent
+}
+
+/**
+ * TODO: implement a function that handles "extends"
+ * @param {string} tsConfigPath
+ * @returns {Promise<CompilerOptions>}
+ */
+async function extractCompilerOptions(tsConfigPath) {
+    return { module: ts.ModuleKind.ESNext }
 }
 
 /**
