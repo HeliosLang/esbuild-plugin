@@ -4,6 +4,7 @@ import { tmpdir } from "node:os"
 import { build } from "esbuild"
 import { createHash } from "node:crypto"
 import { existsSync, mkdirSync } from "node:fs"
+import { transpileModule } from "typescript"
 
 const INTERNAL_CACHE_NAME =
     "__contractContextCache__DO_NOT_USE_THIS_VAR_FOR_SOMETHING_ELSE"
@@ -16,6 +17,7 @@ const INTERNAL_CACHE_NAME =
  *   tsConfig: string
  *   cache?: Record<string, any>
  *   content?: string
+ *   format?: "js" | "ts"
  * }} CompileProps
  */
 
@@ -23,14 +25,20 @@ const INTERNAL_CACHE_NAME =
  * @param {CompileProps} props
  * @returns {Promise<string>}
  */
-export async function compileAndInject({ path, env, tsConfig, cache }) {
+export async function compileAndInject({ path, env, tsConfig, cache, format }) {
     const toBeInjected = await compile({ path, env, tsConfig, cache })
 
     const content = await readFile(path, "utf8")
 
-    return `import { contractContextCache as ${INTERNAL_CACHE_NAME} } from "@helios-lang/contract-utils";
+    let newContent = `import { contractContextCache as ${INTERNAL_CACHE_NAME} } from "@helios-lang/contract-utils";
 ${INTERNAL_CACHE_NAME}.load(${JSON.stringify(toBeInjected)});
 ${content}`
+
+    if (format == "js") {
+        newContent = transpileModule(newContent, {}).outputText
+    }
+
+    return newContent
 }
 
 /**
