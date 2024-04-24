@@ -1,9 +1,9 @@
 import { readFile, writeFile } from "node:fs/promises"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 import { tmpdir } from "node:os"
 import { build } from "esbuild"
 import { createHash } from "node:crypto"
-import { existsSync } from "node:fs"
+import { existsSync, mkdirSync } from "node:fs"
 
 const INTERNAL_CACHE_NAME =
     "__contractContextCache__DO_NOT_USE_THIS_VAR_FOR_SOMETHING_ELSE"
@@ -94,7 +94,15 @@ async function compile({ path, env, tsConfig, cache, content: maybeContent }) {
 
     const h = await generateHash(dst)
 
-    const fsCachePath = join(tmpdir(), "helios-cache", h + ".json")
+    const cacheDir = join(tmpdir(), "helios-cache")
+
+    if (!existsSync(cacheDir)) {
+        mkdirSync(cacheDir, {
+            recursive: true
+        })
+    }
+
+    const fsCachePath = join(cacheDir, h + ".json")
 
     if (existsSync(fsCachePath)) {
         const toBeInjected = JSON.parse(await readFile(fsCachePath, "utf8"))
