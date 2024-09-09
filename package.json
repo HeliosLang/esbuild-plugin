@@ -6,10 +6,9 @@
     "types": "types/index.d.ts",
     "type": "module",
     "scripts": {
-        "build": "npm run prettify && npm run build:types",
-        "build:types": "npx tsc -p jsconfig.json --noEmit false --emitDeclarationOnly",
-        "prettify": "npx prettier . --write",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "build": "pnpm run prettify && pnpm run build:types",
+        "build:types": "tsc -p jsconfig.json --noEmit false --emitDeclarationOnly",
+        "prettify": "prettier . --write"
     },
     "prettier": {
         "trailingComma": "none",
